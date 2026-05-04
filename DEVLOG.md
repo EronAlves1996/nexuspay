@@ -16,7 +16,9 @@ This README is a **living document** designed to be parsed by an LLM (like ChatG
 *(The LLM and User will update this section as features are completed and books are read).*
 
 ### Phase 1: Modern Code & Architecture
-- [ ] **Unit Testing Principles:** Core `Wallet` and `Transaction` domain models are built using TDD. Tests are isolated, fast, and test behaviors, not implementations.
+- [ ] **Unit Testing Principles:** 
+  - [ ] Core `Wallet` and `Transaction` domain models are built using TDD. Tests are isolated, fast, and test behaviors, not implementations.
+  - [ ] Configure code coverage tool
 - [ ] **Building Microservices:** Monolith split into `Identity Service`, `Wallet Service`, and `Transaction Service`. 
 - [ ] **Microservices Patterns:** Implemented API Gateway pattern and Saga Pattern for P2P transfers (ensuring atomicity without distributed locking).
 

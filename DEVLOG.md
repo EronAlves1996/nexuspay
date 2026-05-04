@@ -16,6 +16,7 @@ This DEVLOG is a **living document** designed to be parsed by an LLM (like ChatG
   - [ ] Configure code coverage to not be below 65%
   - [ ] Configure CI/CD to run always after pushing a branch
   - [ ] Lock main for merging if CI/CD dont pass
+  - [ ] Introduce ignore files for coverage
 - [ ] **Building Microservices:** Monolith split into `Identity Service`, `Wallet Service`, and `Transaction Service`. 
 - [ ] **Microservices Patterns:** Implemented API Gateway pattern and Saga Pattern for P2P transfers (ensuring atomicity without distributed locking).
 

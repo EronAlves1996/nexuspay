@@ -1,13 +1,6 @@
 ## 🤖 AI & LLM Integration Instructions (READ THIS FIRST)
 
-This README is a **living document** designed to be parsed by an LLM (like ChatGPT or Claude) to generate hands-on coding tasks.
-
-**How to use this README with an LLM:**
-1. Copy this entire README.
-2. Paste it into your LLM prompt along with the book/chapter you just read.
-3. Use the following prompt template:
-
-> "I am reading [Book Name], specifically the chapter about [Topic/Concept]. Based on my current project progress in the README below, generate a practical coding task to apply this concept. The task must include: Acceptance Criteria, Implementation Steps, and a Testing Strategy. Do not give me the code; guide me to write it."
+This DEVLOG is a **living document** designed to be parsed by an LLM (like ChatGPT or Claude) to track tasks.
 
 ---
 
@@ -18,7 +11,8 @@ This README is a **living document** designed to be parsed by an LLM (like ChatG
 ### Phase 1: Modern Code & Architecture
 - [ ] **Unit Testing Principles:** 
   - [ ] Core `Wallet` and `Transaction` domain models are built using TDD. Tests are isolated, fast, and test behaviors, not implementations.
-  - [ ] Configure code coverage tool
+  - [x] Configure code coverage tool
+  - [ ] Extract configuration into environment variables
 - [ ] **Building Microservices:** Monolith split into `Identity Service`, `Wallet Service`, and `Transaction Service`. 
 - [ ] **Microservices Patterns:** Implemented API Gateway pattern and Saga Pattern for P2P transfers (ensuring atomicity without distributed locking).
 

@@ -13,6 +13,9 @@ This DEVLOG is a **living document** designed to be parsed by an LLM (like ChatG
   - [ ] Core `Wallet` and `Transaction` domain models are built using TDD. Tests are isolated, fast, and test behaviors, not implementations.
   - [x] Configure code coverage tool
   - [ ] Extract configuration into environment variables
+  - [ ] Configure code coverage to not be below 65%
+  - [ ] Configure CI/CD to run always after pushing a branch
+  - [ ] Lock main for merging if CI/CD dont pass
 - [ ] **Building Microservices:** Monolith split into `Identity Service`, `Wallet Service`, and `Transaction Service`. 
 - [ ] **Microservices Patterns:** Implemented API Gateway pattern and Saga Pattern for P2P transfers (ensuring atomicity without distributed locking).
 

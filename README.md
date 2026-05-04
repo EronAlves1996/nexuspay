@@ -18,16 +18,19 @@ The system must support the following business capabilities:
 *This represents the final state of the project after the reading trail is complete.*
 
 *   **Architecture:** Event-Driven Microservices (Saga Pattern for distributed transactions).
-*   **Backend:** Java 21 + Spring Boot 3.
-*   **Database:** PostgreSQL (per service), DB2 is strictly forbidden.
+*   **Backend:** Java 26 + Spring Boot 4.
+*   **Database:** PostgreSQL (per service).
 *   **Messaging:** Apache Kafka (Event Bus & Outbox Pattern).
-*   **Search:** Elasticsearch (Read-model for transaction history).
-*   **Security:** OAuth 2.0 / OIDC (Keycloak), Secure-by-Design domain models.
+*   **Search:** Elasticsearch (CQRS Read-Model).
+*   **Security:** OAuth 2.0 / OIDC (Keycloak).
 *   **Observability:** OpenTelemetry (Traces, Metrics, Logs) -> Grafana/Jaeger.
 *   **Infrastructure:** Docker, Kubernetes (AWS EKS), Nginx Ingress.
 *   **AI/LLM:** Integration with LLM APIs for fraud detection explanations and transaction categorization.
 
 ## 📝 Current System State & Changelog
 
-*   **[Initial State]** - Project is an empty directory. No code exists yet. The developer is using Java 26 and Spring Boot 4.
+*  **[Initial State]** - Project is an empty directory. No code exists yet. The developer is using Java 26 and Spring Boot 4.
+* [Phase 1: Init] - Project skeleton created.
+Infrastructure: Docker Compose configured with PostgreSQL. JaCoCo plugin added for test coverage.
+Pending: Extract configuration into environment variables.
 

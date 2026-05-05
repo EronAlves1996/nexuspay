@@ -1,4 +1,6 @@
 spring:
+  flyway:
+    enabled: false
   application:
     name: nexuspay
   datasource:
@@ -6,8 +8,6 @@ spring:
     username: postgres 
     password: postgres
   jpa:
-    show-sql: false
-    format_sql: false
     properties:
       jakarta:
         persistence: 
@@ -16,6 +16,5 @@ spring:
               action: create 
               create-target: script.sql 
       hibernate:
-        ddl-auto: validate
         hbm2ddl:
           delimiter:;

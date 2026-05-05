@@ -22,15 +22,16 @@ import io.micrometer.common.util.StringUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
-import jakarta.validation.constraints.Min;
 
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
 class UserController {
 
-  static record UpsertUserDto(@NotEmpty @Min(4) String name, @NotEmpty @Email String email) {
+  static record UpsertUserDto(@NotEmpty @Size(min = 4, max = 255) String name,
+      @NotEmpty @Email String email) {
   }
 
   static record RetrieveUserDto(java.util.UUID id, String name, String email,
@@ -63,8 +64,8 @@ class UserController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<RetrieveUserDto> get(@Valid @PathVariable("id") @UUID java.util.UUID id) {
-    Optional<User> possibleUser = service.findById(id);
+  public ResponseEntity<RetrieveUserDto> get(@Valid @PathVariable("id") @UUID String id) {
+    Optional<User> possibleUser = service.findById(java.util.UUID.fromString(id));
 
     return possibleUser.map(RetrieveUserDto::from).map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
@@ -72,9 +73,9 @@ class UserController {
 
   @PutMapping("/{id}")
   public ResponseEntity<RetrieveUserDto> update(@Valid @RequestBody UpsertUserDto dto,
-      @Valid @PathVariable("id") @UUID java.util.UUID id) {
+      @Valid @PathVariable("id") @UUID String id) {
     User userToUpdate = User.from(dto);
-    userToUpdate.setId(id);
+    userToUpdate.setId(java.util.UUID.fromString(id));
     return service.update(userToUpdate).map(RetrieveUserDto::from).map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
   }

@@ -38,6 +38,14 @@ public class UserServiceTest {
     Mockito.verify(repository).save(user);
   }
 
+  @Test
+  public void testCreateUserWithExistentEmail() {
+    User user = User.from(new UpsertUserDto(TEST_NAME, TEST_EMAIL));
+    when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(new User()));
+
+    assertThrows(UserAlreadyExistsException.class, () -> service.create(user));
+  }
+
   private User arrangeFindById() {
     User user = new User();
     user.setEmail(TEST_EMAIL);

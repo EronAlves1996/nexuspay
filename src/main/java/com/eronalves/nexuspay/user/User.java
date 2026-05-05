@@ -5,11 +5,11 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SoftDelete;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.eronalves.nexuspay.user.UserController.CreateUserDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,10 +18,16 @@ import lombok.Setter;
 @Table(name = "app_user")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 @SoftDelete
 public class User {
+
+  public static User from(CreateUserDto dto) {
+    var user = new User();
+    user.setName(dto.name());
+    user.setEmail(dto.email());
+    return user;
+  }
 
   @Id
   private UUID id = UUID.randomUUID();

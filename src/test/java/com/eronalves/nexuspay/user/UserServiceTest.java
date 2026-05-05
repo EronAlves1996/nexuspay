@@ -1,5 +1,7 @@
 package com.eronalves.nexuspay.user;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import java.util.Optional;
@@ -18,6 +20,7 @@ import com.eronalves.nexuspay.user.UserController.UpsertUserDto;
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
+  private static final String SECOND_TEST_MAIL = "other@mail.com";
   private static final String TEST_NAME = "Teste";
   private static final String TEST_EMAIL = "teste@teste";
 
@@ -36,8 +39,7 @@ public class UserServiceTest {
     Mockito.verify(repository).save(user);
   }
 
-  @Test
-  public void testUpdateUserThatExistsAndIsTheSameEmail() {
+  private User arrangeFindById() {
     User user = new User();
     user.setEmail(TEST_EMAIL);
 
@@ -46,6 +48,12 @@ public class UserServiceTest {
       user.setId(argument);
       return Optional.of(user);
     });
+    return user;
+  }
+
+  @Test
+  public void testUpdateUserThatExistsAndIsTheSameEmail() {
+    User user = arrangeFindById();
 
     User userToUpdate = new User();
     userToUpdate.setId(UUID.randomUUID());
@@ -57,4 +65,37 @@ public class UserServiceTest {
     Assertions.assertThat(user.getName()).isEqualTo(TEST_NAME);
   }
 
+
+  @Test
+  public void testUpdateUserThatDontExistsThenReturnEmpty() {
+    when(repository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+    User user = new User();
+    Optional<User> emptyUser = service.update(user);
+
+    Assertions.assertThat(emptyUser).isEmpty();
+  }
+
+  @Test
+  public void testUpdateUserThatExistsButTargetEmailExistsToo() {
+    arrangeFindById();
+    when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(new User()));
+
+    User user = new User();
+    user.setEmail(SECOND_TEST_MAIL);
+
+    assertThrows(UserAlreadyExistsException.class, () -> service.update(user));
+  }
+
+  @Test
+  public void testUpdateUserThatExistsButTargetEmailDoesntExists() {
+    User updatedUser = arrangeFindById();
+    when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.empty());
+
+    User user = new User();
+    user.setEmail(SECOND_TEST_MAIL);
+
+    assertDoesNotThrow(() -> service.update(user));
+    Assertions.assertThat(updatedUser.getEmail()).isEqualTo(SECOND_TEST_MAIL);
+  }
 }

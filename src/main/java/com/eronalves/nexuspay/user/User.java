@@ -32,12 +32,14 @@ public class User {
   @Id
   private UUID id = UUID.randomUUID();
 
+  @Column(nullable = false)
   private String name;
 
-  @Column(unique = true)
+  @Column(unique = true, nullable = false)
   private String email;
 
   @CreationTimestamp
+  @Column(nullable = false)
   private Instant createdAt;
 
   @UpdateTimestamp

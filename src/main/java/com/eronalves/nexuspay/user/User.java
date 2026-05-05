@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SoftDelete;
 import org.hibernate.annotations.UpdateTimestamp;
-import com.eronalves.nexuspay.user.UserController.CreateUserDto;
+import com.eronalves.nexuspay.user.UserController.UpsertUserDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -22,7 +22,7 @@ import lombok.Setter;
 @SoftDelete
 public class User {
 
-  public static User from(CreateUserDto dto) {
+  public static User from(UpsertUserDto dto) {
     var user = new User();
     user.setName(dto.name());
     user.setEmail(dto.email());
@@ -42,6 +42,11 @@ public class User {
 
   @UpdateTimestamp
   private Instant updatedAt;
+
+  public void update(User userToUpdate) {
+    name = userToUpdate.name;
+    email = userToUpdate.email;
+  }
 
 
 }

@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
-import org.hibernate.grammars.hql.HqlParser.ZoneIdContext;
 import org.hibernate.validator.constraints.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,7 +27,7 @@ import jakarta.validation.constraints.Min;
 @RequiredArgsConstructor
 class UserController {
 
-  static record CreateUserDto(@NotEmpty @Min(4) String name, @NotEmpty @Email String email) {
+  static record UpsertUserDto(@NotEmpty @Min(4) String name, @NotEmpty @Email String email) {
   }
 
   static record RetrieveUserDto(java.util.UUID id, String name, String email,
@@ -42,7 +42,7 @@ class UserController {
   private final UserService service;
 
   @PostMapping
-  public ResponseEntity<Void> create(@Valid @RequestBody CreateUserDto dto) {
+  public ResponseEntity<Void> create(@Valid @RequestBody UpsertUserDto dto) {
     User createdUser = service.create(User.from(dto));
     return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
         .buildAndExpand(createdUser.getId()).toUri()).body(null);
@@ -65,7 +65,15 @@ class UserController {
 
     return possibleUser.map(RetrieveUserDto::from).map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
+  }
 
+  @PutMapping("/{id}")
+  public ResponseEntity<RetrieveUserDto> update(@Valid @RequestBody UpsertUserDto dto,
+      @Valid @PathVariable("id") @UUID java.util.UUID id) {
+    User userToUpdate = User.from(dto);
+    userToUpdate.setId(id);
+    return service.update(userToUpdate).map(RetrieveUserDto::from).map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
   }
 
 }

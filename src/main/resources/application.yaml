@@ -19,3 +19,6 @@ spring:
         ddl-auto: validate
         hbm2ddl:
           delimiter:;
+  web:
+    error:
+      include-stacktrace: never

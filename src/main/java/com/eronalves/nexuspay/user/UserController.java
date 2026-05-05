@@ -1,6 +1,10 @@
 package com.eronalves.nexuspay.user;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
+import org.hibernate.grammars.hql.HqlParser.ZoneIdContext;
 import org.hibernate.validator.constraints.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +30,15 @@ class UserController {
   static record CreateUserDto(@NotEmpty @Min(4) String name, @NotEmpty @Email String email) {
   }
 
+  static record RetrieveUserDto(java.util.UUID id, String name, String email,
+      LocalDateTime createdAt, LocalDateTime updatedAt) {
+    static RetrieveUserDto from(User user) {
+      return new RetrieveUserDto(user.getId(), user.getName(), user.getEmail(),
+          LocalDateTime.ofInstant(user.getCreatedAt(), ZoneId.systemDefault()),
+          LocalDateTime.ofInstant(user.getUpdatedAt(), ZoneId.systemDefault()));
+    }
+  }
+
   private final UserService service;
 
   @PostMapping
@@ -36,20 +49,22 @@ class UserController {
   }
 
   @GetMapping
-  public Iterable<User> getAll(@RequestParam("email") String email) {
+  public Iterable<RetrieveUserDto> getAll(@RequestParam("email") String email) {
     if (StringUtils.isEmpty(email)) {
-      return service.getAll();
+      return StreamSupport.stream(service.getAll().spliterator(), false).map(RetrieveUserDto::from)
+          .toList();
     }
 
-    return service.findByEmail(email).stream().toList();
+    return service.findByEmail(email).stream().map(RetrieveUserDto::from).toList();
 
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<User> get(@Valid @PathVariable("id") @UUID java.util.UUID id) {
+  public ResponseEntity<RetrieveUserDto> get(@Valid @PathVariable("id") @UUID java.util.UUID id) {
     Optional<User> possibleUser = service.findById(id);
 
-    return possibleUser.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    return possibleUser.map(RetrieveUserDto::from).map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
 
   }
 

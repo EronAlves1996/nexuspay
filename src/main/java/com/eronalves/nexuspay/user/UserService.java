@@ -15,6 +15,9 @@ public class UserService {
   private final UserRepository repository;
 
   public User create(User user) {
+    if (findByEmail(user.getEmail()).isPresent()) {
+      throw new UserAlreadyExistsException(USER_WITH_EMAIL_EXISTS_MESSAGE);
+    }
     return repository.save(user);
   }
 

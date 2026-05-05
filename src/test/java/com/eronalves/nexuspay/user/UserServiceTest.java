@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.eronalves.nexuspay.user.UserController.CreateUserDto;
 
+// Here we have only one test because the logic behind the user crud doesn't exists entirely
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 

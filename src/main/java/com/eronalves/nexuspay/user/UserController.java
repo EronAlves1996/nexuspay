@@ -1,7 +1,5 @@
 package com.eronalves.nexuspay.user;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import org.hibernate.validator.constraints.UUID;
 import org.springframework.http.ResponseEntity;

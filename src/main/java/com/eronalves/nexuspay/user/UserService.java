@@ -49,4 +49,8 @@ public class UserService {
     return Optional.of(user);
   }
 
+  public void delete(UUID id) {
+    repository.deleteById(id);
+  }
+
 }

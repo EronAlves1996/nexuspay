@@ -19,6 +19,7 @@ This DEVLOG is a **living document** designed to be parsed by an LLM (like ChatG
   - [ ] Introduce ignore files for coverage
   - [ ] Build the User domain model using london school tests (User can be created, can alter it's name and e-mail, e-mail should be unique accross the codebase, 
   can be retrieved by id and by email and can be destroyed through soft delete)
+  - [ ] Start build Wallet domain, with creation from user feature, using classical school tests
 - [ ] **Building Microservices:** Monolith split into `Identity Service`, `Wallet Service`, and `Transaction Service`. 
 - [ ] **Microservices Patterns:** Implemented API Gateway pattern and Saga Pattern for P2P transfers (ensuring atomicity without distributed locking).
 

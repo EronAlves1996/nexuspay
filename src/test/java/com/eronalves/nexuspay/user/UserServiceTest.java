@@ -15,7 +15,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.eronalves.nexuspay.user.UserController.UpsertUserDto;
 
-// Here we have only one test because the logic behind the user crud doesn't exists entirely
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
@@ -78,6 +77,7 @@ public class UserServiceTest {
     when(repository.findById(any(UUID.class))).thenReturn(Optional.empty());
 
     User user = new User();
+    user.setId(UUID.randomUUID());
     Optional<User> emptyUser = service.update(user);
 
     Assertions.assertThat(emptyUser).isEmpty();
@@ -89,6 +89,7 @@ public class UserServiceTest {
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(new User()));
 
     User user = new User();
+    user.setId(UUID.randomUUID());
     user.setEmail(SECOND_TEST_MAIL);
 
     assertThrows(UserAlreadyExistsException.class, () -> service.update(user));
@@ -100,6 +101,7 @@ public class UserServiceTest {
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.empty());
 
     User user = new User();
+    user.setId(UUID.randomUUID());
     user.setEmail(SECOND_TEST_MAIL);
 
     assertDoesNotThrow(() -> service.update(user));

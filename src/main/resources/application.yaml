@@ -9,12 +9,6 @@ spring:
     show-sql: false
     format_sql: false
     properties:
-      jakarta:
-        persistence: 
-          schema-generation:
-            scripts:
-              action: create 
-              create-target: script.sql 
       hibernate:
         ddl-auto: validate
         hbm2ddl:

@@ -1,7 +1,7 @@
 BODY=$(cat <<JSON
     {
-      "name": "José Aldo",
-      "email": "teste@teste.com"
+      "name": "José Aldo Teste",
+      "email": "teste@teste.com.br"
     }
 JSON
 )

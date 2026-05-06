@@ -36,10 +36,11 @@ The system must support the following business capabilities:
 *   **[Phase 2: User Onboarding & DB Migrations]** - Implemented the foundational User CRUD module.
     *   **Features:** RESTful endpoints for user creation, retrieval (by ID/Email), update, and soft-delete. Jakarta Validation applied to request DTOs.
     *   **Database:** Integrated Flyway for schema versioning. Created `V1__create_user_table.sql` with `deleted` column for Hibernate soft-delete support. Enforced `ddl-auto: validate` to ensure code-database parity.
+    *   **Security & Configuration:** Extracted database credentials from `application.yaml` into environment variables (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`). Integrated `spring-dotenv` (optional, dev-only scope) to load `.env` files locally. Added `.env` to `.gitignore` and provided `.env.example` for onboarding.
     *   **Code Quality & Fixes:** 
         *   Standardized UUID handling in controllers (leveraging Spring's auto-conversion).
         *   Ensured proper `@Transactional` boundaries for read-then-write operations (Create/Update).
         *   Standardized timezone handling to prevent cloud-environment inconsistencies.
         *   Removed conflicting JPA schema-generation configurations in favor of pure Flyway.
     *   **Testing:** Added unit tests for `UserService` covering duplicate email constraints and not-found scenarios. Added helper shell scripts (`requests/user/`) for manual API testing.
-    *   *Pending:* Add `@WebMvcTest` for Controller layer. Implement a Global Exception Handler (`@ControllerAdvice`). Extract credentials to environment variables.
+    *   *Pending:* Add `@WebMvcTest` for Controller layer. Implement a Global Exception Handler (`@ControllerAdvice`).

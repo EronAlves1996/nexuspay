@@ -43,4 +43,5 @@ The system must support the following business capabilities:
         *   Standardized timezone handling to prevent cloud-environment inconsistencies.
         *   Removed conflicting JPA schema-generation configurations in favor of pure Flyway.
     *   **Testing:** Added unit tests for `UserService` covering duplicate email constraints and not-found scenarios. Added helper shell scripts (`requests/user/`) for manual API testing.
-    *   *Pending:* Add `@WebMvcTest` for Controller layer. Implement a Global Exception Handler (`@ControllerAdvice`).
+    *   **Coverage Policy:** Configured JaCoCo to enforce a 65% minimum line coverage threshold on the service layer (controllers and repositories excluded at this phase). Exclusions will be refined as test layers expand.
+    *   *Pending:* Add `@WebMvcTest` for Controller layer (will remove controller exclusion from JaCoCo once complete). Implement a Global Exception Handler (`@ControllerAdvice`).

@@ -32,19 +32,12 @@ public class User extends SensibleEntity {
     return user;
   }
 
-
   @Column(nullable = false)
   private String name;
 
   @Column(unique = true, nullable = false)
   private String email;
 
-  @CreationTimestamp
-  @Column(nullable = false)
-  private Instant createdAt;
-
-  @UpdateTimestamp
-  private Instant updatedAt;
 
   public void update(User userToUpdate) {
     name = userToUpdate.name;

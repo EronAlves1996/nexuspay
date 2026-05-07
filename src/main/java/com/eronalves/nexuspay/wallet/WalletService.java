@@ -1,9 +1,11 @@
 package com.eronalves.nexuspay.wallet;
 
+import org.springframework.stereotype.Service;
 import com.eronalves.nexuspay.user.UserService;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
+@Service
 public class WalletService {
 
   private static final String USER_DOESNT_EXISTS = "User doesnt exists";

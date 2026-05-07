@@ -21,7 +21,6 @@ public class WalletServiceTest {
   private WalletRepository repository = Mockito.mock(WalletRepository.class);
   private WalletService sut = new WalletService(repository, userService);
 
-
   @Test
   void create_valid_wallet() {
     UUID userId = UUID.randomUUID();
@@ -33,8 +32,8 @@ public class WalletServiceTest {
       return wallet;
     });
 
-
     var createdWallet = sut.create(Wallet.from(new CreateWalletDto("Wallet Test", userId)));
+
     Assertions.assertThat(createdWallet.getId()).isNotNull();
   }
 
@@ -42,7 +41,6 @@ public class WalletServiceTest {
   void repeated_wallet_name_for_same_user_is_prohibited() {
     Mockito.when(userRepository.findById(Mockito.any(UUID.class)))
         .thenReturn(Optional.of(new User()));
-
     Mockito.when(repository.findByNameAndUserId(Mockito.anyString(), Mockito.any(UUID.class)))
         .thenReturn(Optional.of(new Wallet()));
 

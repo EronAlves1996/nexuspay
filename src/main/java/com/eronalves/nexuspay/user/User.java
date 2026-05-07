@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SoftDelete;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.eronalves.nexuspay.infra.SensitiveEntity;
 import com.eronalves.nexuspay.user.UserController.UpsertUserDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,7 +23,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @SoftDelete
-public class User {
+public class User extends SensitiveEntity {
 
   public static User from(UpsertUserDto dto) {
     var user = new User();
@@ -31,22 +32,12 @@ public class User {
     return user;
   }
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  private UUID id;
-
   @Column(nullable = false)
   private String name;
 
   @Column(unique = true, nullable = false)
   private String email;
 
-  @CreationTimestamp
-  @Column(nullable = false)
-  private Instant createdAt;
-
-  @UpdateTimestamp
-  private Instant updatedAt;
 
   public void update(User userToUpdate) {
     name = userToUpdate.name;

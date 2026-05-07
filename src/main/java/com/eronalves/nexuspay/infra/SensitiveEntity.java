@@ -15,7 +15,7 @@ import lombok.Setter;
 @MappedSuperclass
 @Getter
 @Setter
-public abstract class SensibleEntity {
+public abstract class SensitiveEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)

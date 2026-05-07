@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.SoftDelete;
-import com.eronalves.nexuspay.infra.SensibleEntity;
+import com.eronalves.nexuspay.infra.SensitiveEntity;
 import com.eronalves.nexuspay.user.User;
 import com.eronalves.nexuspay.wallet.WalletController.CreateWalletDto;
 import jakarta.persistence.Column;
@@ -21,9 +21,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @SoftDelete
-public class Wallet extends SensibleEntity {
+public class Wallet extends SensitiveEntity {
 
-  public static Wallet from(@Valid CreateWalletDto dto) {
+  public static Wallet from(CreateWalletDto dto) {
     Wallet wallet = new Wallet();
     wallet.setUserId(dto.userId());
     wallet.setName(dto.name());

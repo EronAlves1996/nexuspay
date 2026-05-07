@@ -40,6 +40,9 @@ public class WalletServiceTest {
 
   @Test
   void repeated_wallet_name_for_same_user_is_prohibited() {
+    Mockito.when(userRepository.findById(Mockito.any(UUID.class)))
+        .thenReturn(Optional.of(new User()));
+
     Mockito.when(repository.findByNameAndUserId(Mockito.anyString(), Mockito.any(UUID.class)))
         .thenReturn(Optional.of(new Wallet()));
 
@@ -49,12 +52,6 @@ public class WalletServiceTest {
 
   @Test
   void create_wallet_for_non_existent_user_is_prohibited() {
-    Mockito.when(repository.save(Mockito.any(Wallet.class))).thenAnswer(call -> {
-      var wallet = (Wallet) call.getArgument(0);
-      wallet.setId(UUID.randomUUID());
-      return wallet;
-    });
-
     assertThrows(UserDoesntExistsException.class,
         () -> sut.create(Wallet.from(new CreateWalletDto("Wallet Test", UUID.randomUUID()))));
   }

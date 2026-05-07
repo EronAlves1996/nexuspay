@@ -17,7 +17,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 class WalletController extends BaseController {
 
-  static record CreateWalletDto(@Size(min = 4, max = 255) String name, @NotNull UUID userId) {
+  static record CreateWalletDto(@Size(min = 4, max = 255) @NotNull String name,
+      @NotNull UUID userId) {
   }
 
   private final WalletService service;

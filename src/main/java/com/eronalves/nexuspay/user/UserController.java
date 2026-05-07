@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import com.eronalves.nexuspay.infra.BaseController;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-class UserController {
+class UserController extends BaseController {
 
   static record UpsertUserDto(@NotEmpty @Size(min = 4, max = 255) String name,
       @NotEmpty @Email String email) {
@@ -48,8 +48,7 @@ class UserController {
   @PostMapping
   public ResponseEntity<Void> create(@Valid @RequestBody UpsertUserDto dto) {
     User createdUser = service.create(User.from(dto));
-    return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-        .buildAndExpand(createdUser.getId()).toUri()).body(null);
+    return createdSensible(createdUser);
   }
 
   @GetMapping

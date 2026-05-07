@@ -60,13 +60,13 @@ public class UserServiceTest {
   @Test
   public void testUpdateUserThatExistsAndIsTheSameEmail() {
     User user = arrangeFindById();
-
     User userToUpdate = new User();
     userToUpdate.setId(UUID.randomUUID());
     userToUpdate.setName(TEST_NAME);
     userToUpdate.setEmail(TEST_EMAIL);
 
     Optional<User> updatedUser = sut.update(userToUpdate);
+
     Assertions.assertThat(updatedUser).isNotEmpty();
     Assertions.assertThat(user.getName()).isEqualTo(TEST_NAME);
   }
@@ -75,9 +75,9 @@ public class UserServiceTest {
   @Test
   public void testUpdateUserThatDontExistsThenReturnEmpty() {
     when(repository.findById(any(UUID.class))).thenReturn(Optional.empty());
-
     User user = new User();
     user.setId(UUID.randomUUID());
+
     Optional<User> emptyUser = sut.update(user);
 
     Assertions.assertThat(emptyUser).isEmpty();
@@ -87,7 +87,6 @@ public class UserServiceTest {
   public void testUpdateUserThatExistsButTargetEmailExistsToo() {
     arrangeFindById();
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(new User()));
-
     User user = new User();
     user.setId(UUID.randomUUID());
     user.setEmail(SECOND_TEST_MAIL);
@@ -99,7 +98,6 @@ public class UserServiceTest {
   public void testUpdateUserThatExistsButTargetEmailDoesntExists() {
     User updatedUser = arrangeFindById();
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.empty());
-
     User user = new User();
     user.setId(UUID.randomUUID());
     user.setEmail(SECOND_TEST_MAIL);

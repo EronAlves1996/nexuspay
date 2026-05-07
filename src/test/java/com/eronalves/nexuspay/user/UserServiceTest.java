@@ -26,13 +26,13 @@ public class UserServiceTest {
   private UserRepository repository;
 
   @InjectMocks
-  private UserService service;
+  private UserService sut;
 
   @Test
   public void testCreateUser() {
     User user = User.from(new UpsertUserDto(TEST_NAME, TEST_EMAIL));
 
-    service.create(user);
+    sut.create(user);
 
     Mockito.verify(repository).save(user);
   }
@@ -42,7 +42,7 @@ public class UserServiceTest {
     User user = User.from(new UpsertUserDto(TEST_NAME, TEST_EMAIL));
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(new User()));
 
-    assertThrows(UserAlreadyExistsException.class, () -> service.create(user));
+    assertThrows(UserAlreadyExistsException.class, () -> sut.create(user));
   }
 
   private User arrangeFindById() {
@@ -66,7 +66,7 @@ public class UserServiceTest {
     userToUpdate.setName(TEST_NAME);
     userToUpdate.setEmail(TEST_EMAIL);
 
-    Optional<User> updatedUser = service.update(userToUpdate);
+    Optional<User> updatedUser = sut.update(userToUpdate);
     Assertions.assertThat(updatedUser).isNotEmpty();
     Assertions.assertThat(user.getName()).isEqualTo(TEST_NAME);
   }
@@ -78,7 +78,7 @@ public class UserServiceTest {
 
     User user = new User();
     user.setId(UUID.randomUUID());
-    Optional<User> emptyUser = service.update(user);
+    Optional<User> emptyUser = sut.update(user);
 
     Assertions.assertThat(emptyUser).isEmpty();
   }
@@ -92,7 +92,7 @@ public class UserServiceTest {
     user.setId(UUID.randomUUID());
     user.setEmail(SECOND_TEST_MAIL);
 
-    assertThrows(UserAlreadyExistsException.class, () -> service.update(user));
+    assertThrows(UserAlreadyExistsException.class, () -> sut.update(user));
   }
 
   @Test
@@ -104,7 +104,7 @@ public class UserServiceTest {
     user.setId(UUID.randomUUID());
     user.setEmail(SECOND_TEST_MAIL);
 
-    assertDoesNotThrow(() -> service.update(user));
+    assertDoesNotThrow(() -> sut.update(user));
     Assertions.assertThat(updatedUser.getEmail()).isEqualTo(SECOND_TEST_MAIL);
   }
 }

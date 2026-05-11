@@ -29,7 +29,7 @@ public class UserServiceTest {
   private UserService sut;
 
   @Test
-  public void testCreateUser() {
+  public void valid_user_is_created_successfully() {
     User user = User.from(new UpsertUserDto(TEST_NAME, TEST_EMAIL));
 
     sut.create(user);
@@ -38,7 +38,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void testCreateUserWithExistentEmail() {
+  public void user_with_same_email_as_other_user_is_prohibited() {
     User user = User.from(new UpsertUserDto(TEST_NAME, TEST_EMAIL));
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(new User()));
 
@@ -58,7 +58,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void testUpdateUserThatExistsAndIsTheSameEmail() {
+  public void user_is_updated_but_email_stays_the_same_is_updated_successfully() {
     User user = arrangeFindById();
     User userToUpdate = new User();
     userToUpdate.setId(UUID.randomUUID());
@@ -73,7 +73,7 @@ public class UserServiceTest {
 
 
   @Test
-  public void testUpdateUserThatDontExistsThenReturnEmpty() {
+  public void is_impossible_to_update_user_that_doesnt_exists() {
     when(repository.findById(any(UUID.class))).thenReturn(Optional.empty());
     User user = new User();
     user.setId(UUID.randomUUID());
@@ -84,7 +84,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void testUpdateUserThatExistsButTargetEmailExistsToo() {
+  public void update_user_completely_but_the_email_already_exists_for_other_user() {
     arrangeFindById();
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(new User()));
     User user = new User();
@@ -95,7 +95,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void testUpdateUserThatExistsButTargetEmailDoesntExists() {
+  public void update_user_completely_and_email_is_entirely_new() {
     User updatedUser = arrangeFindById();
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.empty());
     User user = new User();

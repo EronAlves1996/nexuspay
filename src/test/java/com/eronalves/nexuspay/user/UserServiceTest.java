@@ -58,7 +58,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void user_is_updated_but_email_stays_the_same_is_updated_successfully() {
+  public void updating_user_with_unchanged_email_succeeds() {
     User user = arrangeFindById();
     User userToUpdate = new User();
     userToUpdate.setId(UUID.randomUUID());
@@ -73,7 +73,7 @@ public class UserServiceTest {
 
 
   @Test
-  public void is_impossible_to_update_user_that_doesnt_exists() {
+  public void updating_non_existent_user_fails() {
     when(repository.findById(any(UUID.class))).thenReturn(Optional.empty());
     User user = new User();
     user.setId(UUID.randomUUID());
@@ -84,7 +84,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void update_user_completely_with_email_that_already_exists_for_other_user_is_prohibited() {
+  public void update_with_duplicate_email_for_other_user_is_rejected() {
     arrangeFindById();
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(new User()));
     User user = new User();

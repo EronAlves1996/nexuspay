@@ -84,7 +84,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void update_user_completely_but_the_email_already_exists_for_other_user() {
+  public void update_user_completely_with_email_that_already_exists_for_other_user_is_prohibited() {
     arrangeFindById();
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(new User()));
     User user = new User();
@@ -95,7 +95,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void update_user_completely_and_email_is_entirely_new() {
+  public void update_user_completely_with_entirely_new_email_succeeds() {
     User updatedUser = arrangeFindById();
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.empty());
     User user = new User();

@@ -43,7 +43,7 @@ The system must support the following business capabilities:
         *   Standardized timezone handling to prevent cloud-environment inconsistencies.
         *   Removed conflicting JPA schema-generation configurations in favor of pure Flyway.
     *   **Testing:** Added unit tests for `UserService` covering duplicate email constraints and not-found scenarios. Adopted `sut` (System Under Test) naming convention for test fields to clearly distinguish the tested component from mocks. Added helper shell scripts (`requests/user/`) for manual API testing.
-    *   **Coverage Policy:** Configured JaCoCo to enforce a 65% minimum line coverage threshold on the service layer (controllers and repositories excluded at this phase). Exclusions will be refined as test layers expand.
+    *   **Coverage Policy:** Configured JaCoCo to enforce a minimum 65% line coverage and 80% branch coverage on the service layer (controllers, repositories, and the main application class excluded). Exclusions will be refined as test layers expand.
     *   *Pending:* Add `@WebMvcTest` for Controller layer (will remove controller exclusion from JaCoCo once complete). Implement a Global Exception Handler (`@ControllerAdvice`).
 *   **[Phase 2.1: Continuous Integration Setup]** - Added basic CI pipeline.
     *   **Features:** GitHub Actions workflow (`run-build.yml`) triggered on Pull Requests. Automated Maven build and JaCoCo coverage threshold validation on every PR. Configured with JDK 26 (Temurin) and Maven caching.

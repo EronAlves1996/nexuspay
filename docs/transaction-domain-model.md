@@ -96,7 +96,7 @@ For the tables, we already have a wallet table, and users can have many wallets.
 That way, the wallet table will have two more columns:
 
 - balance: Decimal(10,2) => This will be a materialized balance that will be updated from times to times;
-- last_processed_operation: timestamp => This will set which operations in the transaction set need to be processed to updated balance or to give the updated balance position;
+- last_processed_transaction_id: BigInt => This will set which operations in the transaction set need to be processed to updated balance or to give the updated balance position;
 
 For transaction, the data model need to properly reflect the double entry bookkeeping, with the amounts, the source and target wallet and the description of the operation. That way, this new table will have the following fields:
 

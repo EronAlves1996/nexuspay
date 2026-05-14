@@ -6,13 +6,13 @@ This documents states the concept, designs and implementation steps of transacti
 
 Therefore, we need to have a clear mental model of the interactions between the players to properly implement this domain.
 First of all, a transaction is a interaction between two players of unidirectional resource transfer. That way, is a zero-sum operation.
-As stated, we need two players to make a transaction, and we have a bunchfull of ways to register this transaction. The more accepted way in the financial world is using a double entry bookeeping system.
+As stated, we need two players to make a transaction, and we have a bunch of ways to register this transaction. The more accepted way in the financial world is using a double entry bookeeping system.
 
 Even the transaction is always a unidirectional interaction, the transaction always will incur in two effects:
 1. A withdrawal of the resource on the source side;
 2. A deposit of the resource on the target side.
 
-That way, the balance of the resources is always maintained, consisting of the rough mathematical formulae bellow:
+That way, the balance of the resources is always maintained, consisting of the rough mathematical formulae below:
 
 `(X - Y) = (Z + Y)`
 
@@ -31,7 +31,7 @@ have lower amounts of the resource, resulting in a zero-sum relation.
 
 By the way, in a payment system we are always talking about money as the main resource, and money is always governed by some entitled entity, can it be the Central Bank and/or the National Treasure.
 
-This entity can decide, by some echonomical criteria, to emit more or to retain and destroy money, and the main way this money can be made available for the society is through the banking system. 
+This entity can decide, by some economical criteria, to emit more or to retain and destroy money, and the main way this money can be made available for the society is through the banking system. 
 
 Banks manages money by having some solvency factor behind all of deposits in it, and every transaction they made (withdrawal, deposit, transfer between banks) can alter this solvency factor. Eventually, it should be ammended, depending on the regulatory system, by realizing the transfer of the actual resources between banks or requesting/paying more resources from the entitled entity.
 
@@ -41,11 +41,11 @@ By the way the concepts are well understood, we need to model this zero sum rela
 
 By means of abstraction, the transactions always will be executed from the source side, because all the mechanisms of concurrency can be greater simplified. Credit operations will always add to the balance, and normally accounts don't have any upper limit, but minimum limit. 
 
-This minimum limit can be bellow 0,00, by means of credit concession from the main system.
+This minimum limit can be below 0,00, by means of credit concession from the main system.
 
 ### Internal transactions 
 
-Internal transactions are the easier to model. We can define this as a payment (transfer) between users, and this simple operation can be exemplified with the relation bellow:
+Internal transactions are the easier to model. We can define this as a payment (transfer) between users, and this simple operation can be exemplified with the relation below:
 
 | Relation | Operation | Amount |
 |----------|-----------|--------|
@@ -92,7 +92,7 @@ Note that, the sum of every operation is always zero.
 
 ### Data
 
-For the tables, we already have a wallet table, and users can have many wallets. Each wallet, actually, cannot be bellow some amount, and we need an easy way to track the balance.
+For the tables, we already have a wallet table, and users can have many wallets. Each wallet, actually, cannot be below some amount, and we need an easy way to track the balance.
 That way, the wallet table will have two more columns:
 
 - balance: Decimal(10,2) => This will be a materialized balance that will be updated from times to times;
@@ -129,9 +129,9 @@ Where:
 For a transaction to take place they need:
 
 1. Inspect the balance on the wallet table. This inspection will lock the row using `SELECT... FOR UPDATE`. This row locking will prevent concurrent source transactions and assert correctness;
-2. Fetch the opreations since last_processed_operation. This table doesn't need any lock and transactions can flow to target wallets freely;
-3. Produce the current balance position, as explained in the immediatelly former section;
-4. Check if the transaction will cause the balance to go bellow the min limit on the table. If yes, the transaction is immediatelly aborted;
+2. Fetch the operations since last_processed_operation. This table doesn't need any lock and transactions can flow to target wallets freely;
+3. Produce the current balance position, as explained in the immediately former section;
+4. Check if the transaction will cause the balance to go below the min limit on the table. If yes, the transaction is immediately aborted;
 5. Produce the actual double entry bookkeeping registries, registering on the transaction table.
 
 #### Compensations 

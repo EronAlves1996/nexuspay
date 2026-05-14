@@ -100,13 +100,14 @@ That way, the wallet table will have two more columns:
 
 For transaction, the data model need to properly reflect the double entry bookkeeping, with the amounts, the source and target wallet and the description of the operation. That way, this new table will have the following fields:
 
+- id: BigInt (serial) => The transaction id (PK)
 - wallet_id: UUID => The wallet were the operation takes place 
 - operation_timestamp: timestamp => The timestamp for the operation 
 - operation: enum(debit, credit) => The type of operation that will take place 
 - description: varchar(255) => How this operation is described (eventually this will appear on the extract)
 - amount: Decimal(10,2) => The amount this operation will increase or decreased on the wallet 
 
-The primary key for this transaction table will be a combination between wallet_id and operation_timestamp. Since each registry of this table is immutable, they will not be deleted ever. They don't need any flag for soft delete.
+Since each registry of this table is immutable, they will not be deleted ever. They don't need any flag for soft delete.
 
 ### Application logic 
 

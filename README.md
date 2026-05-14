@@ -61,3 +61,49 @@ The system must support the following business capabilities:
     *   **Testing:** Added unit tests for `WalletService` covering successful creation, duplicate name rejection, and non-existent user rejection. Added manual test script (`requests/wallet/create.sh`).
     *   **Testing Conventions:** Standardized AAA (Arrange-Act-Assert) structure across all unit tests using blank line separation. Within each phase, related setup statements are grouped together; a blank line precedes the Act call and another separates the Assert phase. Complex tests may use explicit `// --- Arrange ---` comment blocks for clarity. Test method names use descriptive, sentence-like snake_case (e.g., `user_with_same_email_as_other_user_is_prohibited`) to tell the story of the scenario and expected outcome, prioritizing readability over rigid naming templates.
     *   *Pending:* Implement a Global Exception Handler (`@ControllerAdvice`) to centralize error responses. Add `@WebMvcTest` for `WalletController`. Implement Wallet retrieval endpoints (by ID, by User). Implement Funds Management (deposit/withdraw).
+*   **[Phase 4: Transaction Domain Model (Double-Entry Accounting)]** - Designed the core transaction engine based on a double-entry bookkeeping model.
+    *   **Concepts:** A transaction is a zero-sum, unidirectional resource transfer between two players. Every transfer incurs a debit (reduction) on the source and a credit (addition) on the target. This is modelled using double-entry accounting, ensuring the total amount of money in the system remains invariant.
+    *   **Database Changes (Pending Implementation):**
+        *   **Wallet table additions:** Two new columns – `balance DECIMAL(10,2)` (materialized current balance) and `last_processed_transaction_id BIGINT` (marks the last transaction included in the materialized balance). The wallet also retains a `minimum_balance` constraint (can be negative for credit lines).
+        *   **Transaction table (`V3__create_transaction_table.sql`):** Immutable audit log with columns:
+            *   `id BIGSERIAL PRIMARY KEY`
+            *   `wallet_id UUID` (the wallet affected by this entry – either source or target)
+            *   `operation_timestamp TIMESTAMP`
+            *   `operation ENUM('DEBIT', 'CREDIT')`
+            *   `description VARCHAR(255)`
+            *   `amount DECIMAL(10,2)`
+        *   **Important:** Each logical transfer (e.g., P2P payment) produces **two** rows in the transaction table: one DEBIT for the source wallet and one CREDIT for the target wallet, inserted inside the same database transaction to preserve the zero-sum invariant.
+    *   **Application Logic:**
+        *   **Balance computation:** `current_balance = wallet.balance - sum(debits since last_processed_id) + sum(credits since last_processed_id)`.
+        *   **Transaction execution (source side):**
+            1. Lock the source wallet row using `SELECT ... FOR UPDATE`.
+            2. Fetch all transactions with `id > wallet.last_processed_transaction_id` (no lock needed for reads).
+            3. Calculate the true current balance.
+            4. Verify that `current_balance - transfer_amount >= wallet.minimum_balance`. If not, abort.
+            5. Insert the DEBIT row for the source and the CREDIT row for the target inside the same `@Transactional` method.
+            6. *The target wallet is not locked* – its balance will be eventually consistent; credit operations never fail due to upper limits (no upper limits exist in this model).
+        *   **Nightly compensations (external pseudo-accounts):**
+            *   External players (e.g., National Treasure, Nexus Pay custody accounts) are represented as wallets owned by a special "system" user.
+            *   Every night, the system fetches all such external wallets.
+            *   For each wallet:
+                *   If balance > 0 → debit the external wallet, credit the custody wallet (root user).
+                *   If balance < 0 → credit the external wallet, debit the custody wallet.
+            *   This ensures the custody wallet absorbs all residual imbalances, maintaining the zero-sum property across the entire system.
+        *   **Nightly materialized balance update:**
+            *   Runs after compensations.
+            *   Iterates over all wallets, outside of any long-running transaction.
+            *   For each wallet, starts a new transaction with `REPEATABLE READ` isolation, locks the wallet row (`SELECT FOR UPDATE`), aggregates all unprocessed transactions (where `id > last_processed_transaction_id`), updates `balance` and sets `last_processed_transaction_id` to the maximum `id` of the processed transactions.
+            *   If a live transaction is concurrently holding the lock, the nightly update waits (lock acquisition order prevents deadlocks).
+    *   **Pending Implementation Details:**
+        *   Flyway migration scripts for `V3__create_transaction_table.sql` and the `ALTER TABLE wallet ADD COLUMN ...` statements.
+        *   `Transaction` entity (JPA) and `TransactionRepository`.
+        *   `TransactionService` with methods: `transfer(sourceWalletId, targetWalletId, amount, description)`.
+        *   Unit and integration tests covering:
+            *   Happy path (successful transfer).
+            *   Insufficient funds (balance below minimum).
+            *   Concurrent transfers from the same wallet (pessimistic locking prevents race conditions).
+            *   Nightly compensation and balance materialization logic (scheduled jobs using `@Scheduled` or a cron‑based trigger).
+        *   Global exception handler for transaction-specific exceptions (`InsufficientFundsException`, `WalletNotFoundException`).
+        *   Manual test script `requests/transaction/transfer.sh`.
+    *   **Design Documentation:** The detailed design is captured in `docs/transaction-domain-model.md`, which served as the blueprint for this phase.
+    *   *Note on future evolution:* This monolith design intentionally uses row‑level locking for simplicity. When the project evolves to microservices, the transaction engine will be refactored into an event‑driven saga with Kafka and the outbox pattern, and idempotency keys will be introduced. Those changes are out of scope for the current phase.

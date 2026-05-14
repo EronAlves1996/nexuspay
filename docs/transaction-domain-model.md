@@ -143,6 +143,9 @@ Compensations will be run every night. The wallets that need compensation will a
 3. For each wallet, check if the balance is positive or negative;
 4. Produce the compensatory transaction against the custody wallet on the root user.
 
+
+If the external wallet balance > 0, debit it and credit the custody wallet. If balance < 0, credit it and debit the custody wallet.
+
 The custody wallet is a root owned wallet where the compensations with external players can be counter balanced and exists to ensure the zero-sum nature resources.
 
 #### Balance updates 

@@ -20,18 +20,23 @@ jobs:
         cache: 'maven'
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Generate JaCoCo report
+      if: always()
+      run: mvn -B jacoco:report
     - name: Check Code Coverage
       run: mvn -B jacoco:check --file pom.xml
-    - name: Upload unit testing reports
+    - name: Test reports
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: Junit_unit_testing_reports
         path: target/surefire-reports
-    - name: Upload jacoco reports
+        retention-days: 2
+    - name: Jacoco reports
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: Jacoco_reports
         path: target/site/jacoco
+        retention-days: 2
 

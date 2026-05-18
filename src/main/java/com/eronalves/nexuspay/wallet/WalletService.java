@@ -1,5 +1,7 @@
 package com.eronalves.nexuspay.wallet;
 
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import com.eronalves.nexuspay.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,10 @@ public class WalletService {
     }
 
     return repository.save(wallet);
+  }
+
+  public Optional<Wallet> findById(UUID id) {
+    return repository.findById(id);
   }
 
 

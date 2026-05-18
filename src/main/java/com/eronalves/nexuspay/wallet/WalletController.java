@@ -1,7 +1,12 @@
 package com.eronalves.nexuspay.wallet;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +26,14 @@ class WalletController extends BaseController {
       @NotNull UUID userId) {
   }
 
+  static record RetrieveWalletDto(UUID id, String name, BigDecimal minLimit, UUID userId,
+      Instant createdAt, Instant updatedAt) {
+    static RetrieveWalletDto from(Wallet wallet) {
+      return new RetrieveWalletDto(wallet.getId(), wallet.getName(), wallet.getMinLimit(),
+          wallet.getUserId(), wallet.getCreatedAt(), wallet.getUpdatedAt());
+    }
+  }
+
   private final WalletService service;
 
   @PostMapping
@@ -28,6 +41,13 @@ class WalletController extends BaseController {
     Wallet wallet = Wallet.from(dto);
     Wallet created = service.create(wallet);
     return createdSensible(created);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<RetrieveWalletDto> getById(@PathVariable UUID id) {
+    Optional<Wallet> entity = service.findById(id);
+    return entity.map(RetrieveWalletDto::from).map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
   }
 
 

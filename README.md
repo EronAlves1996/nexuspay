@@ -48,10 +48,10 @@ The system must support the following business capabilities:
 *   **[Phase 2.1: Continuous Integration Setup]** - Added basic CI pipeline.
     *   **Features:** GitHub Actions workflow (`run-build.yml`) triggered on Pull Requests. Automated Maven build and JaCoCo coverage threshold validation on every PR. Configured with JDK 26 (Temurin) and Maven caching.
     *   **Cleanup:** Removed default `NexuspayApplicationTests` context load test to allow CI to pass without requiring external database dependencies at this stage.
+    *   **Artifact Publishing (Completed):** Added steps to generate the JaCoCo HTML report (`jacoco:report`) and upload both JUnit test reports and JaCoCo coverage reports as workflow artifacts. Retention period set to 2 days to avoid clutter.
     *   **Known Issues & Technical Debt:** 
         *   Because the context load test was removed and no database environment variables are injected into the workflow, CI currently only validates compilation and unit tests. It will **not** catch broken Flyway migrations, missing configurations, or Spring bean wiring issues.
     *   *Pending:* Integrate Testcontainers to spin up a PostgreSQL instance during CI runs, and restore the `@SpringBootTest` to validate application context and migrations.
-    *   *Pending:* Publish JUnit test results and JaCoCo coverage HTML reports as GitHub Actions artifacts for easier PR review.
 *   **[Phase 3: Wallet Creation & Infrastructure Refactoring]** - Implemented Wallet module and extracted shared JPA abstractions.
     *   **Features:** RESTful endpoint for wallet creation, bound to an existing user. Enforced unique wallet names per user at both application and database levels.
     *   **Infrastructure Refactoring:** Extracted `SensitiveEntity` as a `@MappedSuperclass` containing `id`, `createdAt`, and `updatedAt` fields. Refactored `User` entity to extend it. Extracted `BaseController` with a helper method for consistent `201 Created` responses with `Location` header.

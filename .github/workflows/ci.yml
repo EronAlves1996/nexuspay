@@ -22,4 +22,14 @@ jobs:
       run: mvn -B package --file pom.xml
     - name: Check Code Coverage
       run: mvn -B jacoco:check --file pom.xml
+    - name: Upload unit testing reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: Junit_unit_testing_reports
+        path: target/surefire-reports
+    - name: Upload jacoco reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: Jacoco_reports
+        path: target/site/jacoco
 

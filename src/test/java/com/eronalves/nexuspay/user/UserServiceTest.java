@@ -86,13 +86,13 @@ public class UserServiceTest {
   @Test
   public void update_with_duplicate_email_for_other_user_is_rejected() {
     arrangeFindById();
-    throw new RuntimeException("Test if articats still uploaded");
     when(repository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(new User()));
     User user = new User();
     user.setId(UUID.randomUUID());
     user.setEmail(SECOND_TEST_MAIL);
 
     assertThrows(UserAlreadyExistsException.class, () -> sut.update(user));
+    throw new RuntimeException("Test if articats still uploaded");
   }
 
   @Test

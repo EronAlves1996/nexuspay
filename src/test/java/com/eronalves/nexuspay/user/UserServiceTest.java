@@ -92,7 +92,6 @@ public class UserServiceTest {
     user.setEmail(SECOND_TEST_MAIL);
 
     assertThrows(UserAlreadyExistsException.class, () -> sut.update(user));
-    throw new RuntimeException("Test if articats still uploaded");
   }
 
   @Test

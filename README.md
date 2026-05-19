@@ -64,6 +64,21 @@ The system must support the following business capabilities:
     *   **Pending:**
         *   Add `@Transactional(readOnly = true)` to `WalletService.findById` to optimise read operations and signal intent.
         *   Implement Wallet retrieval by user (list wallets for a given user).
+*   **[Phase 3.1: Soft-Delete Index Optimization]** - Improved unique constraints to work correctly with soft-delete.
+    *   **Problem:** The original `UNIQUE` constraints on `app_user(email)` and `wallet(name, user_id)` prevented creating new active records with the same value as a soft-deleted one. This made soft-delete less practical.
+    *   **Solution:** Replaced the full-table unique constraints with **partial unique indexes** that only enforce uniqueness on active rows (`WHERE deleted = false`).  
+    *   **Database Migration:** Created `V3__fix_table_indexes_to_consider_deleted_data.sql`:
+        ```sql
+        ALTER TABLE app_user DROP CONSTRAINT app_user_email_key;
+        CREATE UNIQUE INDEX app_user_email_key ON app_user (email) WHERE deleted = false;
+
+        ALTER TABLE wallet DROP CONSTRAINT wallet_name_user_id_key;
+        CREATE UNIQUE INDEX wallet_name_user_id_key ON wallet (name, user_id) WHERE deleted = false;
+        ```
+    *   **Result:** Duplicate emails or wallet names are now allowed among soft‑deleted records, while active records remain strictly unique. This aligns perfectly with Hibernate’s `@SoftDelete` behaviour.
+    *   **Impact:** No application code changes required – the partial indexes are transparent to JPA. Manual testing confirmed that `INSERT` operations respect the new rules.
+    *   **Status:** Completed and merged.
+
 *   **[Phase 4: Transaction Domain Model (Double-Entry Accounting)]** - Designed the core transaction engine based on a double-entry bookkeeping model.
     *   **Concepts:** A transaction is a zero-sum, unidirectional resource transfer between two players. Every transfer incurs a debit (reduction) on the source and a credit (addition) on the target. This is modelled using double-entry accounting, ensuring the total amount of money in the system remains invariant.
     *   **Database Changes (Pending Implementation):**
@@ -98,7 +113,7 @@ The system must support the following business capabilities:
             *   For each wallet, starts a new transaction with `REPEATABLE READ` isolation, locks the wallet row (`SELECT FOR UPDATE`), aggregates all unprocessed transactions (where `id > last_processed_transaction_id`), updates `balance` and sets `last_processed_transaction_id` to the maximum `id` of the processed transactions.
             *   If a live transaction is concurrently holding the lock, the nightly update waits (lock acquisition order prevents deadlocks).
     *   **Pending Implementation Details:**
-        *   Flyway migration scripts for `V3__create_transaction_table.sql` and the `ALTER TABLE wallet ADD COLUMN ...` statements.
+        *   Flyway migration scripts for `V4__create_transaction_table.sql` and the `ALTER TABLE wallet ADD COLUMN ...` statements.
         *   `Transaction` entity (JPA) and `TransactionRepository`.
         *   `TransactionService` with methods: `transfer(sourceWalletId, targetWalletId, amount, description)`.
         *   Unit and integration tests covering:

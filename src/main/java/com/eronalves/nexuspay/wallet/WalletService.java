@@ -52,7 +52,7 @@ public class WalletService {
       throw new UserDoesntExistsException(USER_DOESNT_EXISTS);
     }
 
-    if (!foundWallet.isSame(wallet)
+    if (!foundWallet.getName().equals(wallet.getName())
         && repository.findByNameAndUserId(wallet.getName(), wallet.getUserId()).isPresent()) {
       throw new WalletAlreadyExistsException(EXISTENT_WALLET_MESSAGE);
     }

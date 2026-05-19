@@ -30,7 +30,7 @@ public class Wallet extends SensitiveEntity {
     wallet.setMinLimit(BigDecimal.ZERO);
     return wallet;
   }
-  
+
   public static Wallet from(UpdateWalletDto dto) {
     Wallet wallet = new Wallet();
     wallet.setUserId(dto.userId());
@@ -52,10 +52,6 @@ public class Wallet extends SensitiveEntity {
 
   @Column(name = "user_id", nullable = false)
   private UUID userId;
-
-  public boolean isSame(Wallet wallet) {
-    return wallet.name.equals(name) && wallet.userId.equals(userId);
-  }
 
   public void update(Wallet wallet) {
     name = wallet.name;

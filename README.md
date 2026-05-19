@@ -79,6 +79,19 @@ The system must support the following business capabilities:
     *   **Impact:** No application code changes required – the partial indexes are transparent to JPA. Manual testing confirmed that `INSERT` operations respect the new rules.
     *   **Status:** Completed and merged.
 
+*   **[Phase 3.2: Wallet Update Endpoint]** - Implemented `PUT /wallets/{id}` to modify an existing wallet.
+    *   **Features:** Updates wallet `name` and `minLimit` (maximum zero). The `userId` in the request body must match the current owner; transferring a wallet to another user is forbidden and returns `403 Forbidden`.
+    *   **Validation & Error Handling:**
+        *   `@Size(min=4, max=255)` and `@NotNull` on `name`.
+        *   `@NotNull` and `@Max(0)` on `minLimit`.
+        *   `NotFoundException` (`404`) if the wallet does not exist.
+        *   `UserDoesntExistsException` (`400`) if the user referenced in the DTO no longer exists.
+        *   `CantTransferWalletsException` (`403`) if the DTO’s `userId` differs from the existing wallet’s owner.
+        *   `WalletAlreadyExistsException` (`409`) if the new name already belongs to another active wallet of the same user.
+    *   **Data Integrity:** The update runs inside a transactional method and uses the existing `findByNameAndUserId` check, which respects soft‑deleted rows. The partial unique index on `(name, user_id) WHERE deleted = false` provides a final safeguard against duplicates.
+    *   **Testing:** Unit tests cover the happy path, wallet not found, user not found, duplicate name, and cross‑user transfer attempts.
+    *   **Manual Testing:** Added `requests/wallet/update.sh` script.
+
 *   **[Phase 4: Transaction Domain Model (Double-Entry Accounting)]** - Designed the core transaction engine based on a double-entry bookkeeping model.
     *   **Concepts:** A transaction is a zero-sum, unidirectional resource transfer between two players. Every transfer incurs a debit (reduction) on the source and a credit (addition) on the target. This is modelled using double-entry accounting, ensuring the total amount of money in the system remains invariant.
     *   **Database Changes (Pending Implementation):**

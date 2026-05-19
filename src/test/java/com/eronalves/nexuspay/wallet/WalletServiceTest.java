@@ -15,7 +15,7 @@ import com.eronalves.nexuspay.user.User;
 import com.eronalves.nexuspay.user.UserRepository;
 import com.eronalves.nexuspay.user.UserService;
 import com.eronalves.nexuspay.wallet.WalletController.CreateWalletDto;
-import com.eronalves.nexuspay.wallet.WalletController.UpdateWalletDto;;
+import com.eronalves.nexuspay.wallet.WalletController.UpdateWalletDto;
 
 @ExtendWith(MockitoExtension.class)
 public class WalletServiceTest {

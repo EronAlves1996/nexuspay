@@ -15,7 +15,7 @@ public class WalletService {
 
   private static final String TRANSFERING_WALLETS_BETWEEN_USERS_IS_PROHIBITED =
       "Transfering wallets between users is prohibited";
-  private static final String WALLET_DOESN_T_EXISTS = "Wallet doesn't exists";
+  private static final String WALLET_DOES_NOT_EXISTS = "Wallet doesn't exists";
   private static final String USER_DOESNT_EXISTS = "User doesn't exists";
   private static final String EXISTENT_WALLET_MESSAGE =
       "Wallet with this name for this user already exists";
@@ -42,7 +42,7 @@ public class WalletService {
   @Transactional(readOnly = false)
   public void update(Wallet wallet) {
     var foundWallet = repository.findById(wallet.getId())
-        .orElseThrow(() -> new NotFoundException(WALLET_DOESN_T_EXISTS));
+        .orElseThrow(() -> new NotFoundException(WALLET_DOES_NOT_EXISTS));
 
     if (!wallet.getUserId().equals(foundWallet.getUserId())) {
       throw new CantTransferWalletsException(TRANSFERING_WALLETS_BETWEEN_USERS_IS_PROHIBITED);

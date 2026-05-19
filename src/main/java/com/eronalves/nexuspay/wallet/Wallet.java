@@ -8,12 +8,12 @@ import org.hibernate.annotations.SoftDelete;
 import com.eronalves.nexuspay.infra.SensitiveEntity;
 import com.eronalves.nexuspay.user.User;
 import com.eronalves.nexuspay.wallet.WalletController.CreateWalletDto;
+import com.eronalves.nexuspay.wallet.WalletController.UpdateWalletDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,6 +28,14 @@ public class Wallet extends SensitiveEntity {
     wallet.setUserId(dto.userId());
     wallet.setName(dto.name());
     wallet.setMinLimit(BigDecimal.ZERO);
+    return wallet;
+  }
+  
+  public static Wallet from(UpdateWalletDto dto) {
+    Wallet wallet = new Wallet();
+    wallet.setUserId(dto.userId());
+    wallet.setName(dto.name());
+    wallet.setMinLimit(dto.minLimit());
     return wallet;
   }
 
@@ -45,5 +53,14 @@ public class Wallet extends SensitiveEntity {
   @Column(name = "user_id", nullable = false)
   private UUID userId;
 
+  public boolean isSame(Wallet wallet) {
+    return wallet.name.equals(name) && wallet.userId.equals(userId);
+  }
+
+  public void update(Wallet wallet) {
+    name = wallet.name;
+    minLimit = wallet.minLimit;
+    userId = wallet.userId;
+  }
 
 }

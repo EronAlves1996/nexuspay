@@ -13,8 +13,8 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class WalletService {
 
-  private static final String TRANSFERING_WALLETS_BETWEEN_USERS_IS_PROIBITED =
-      "Transfering wallets between users is proibited";
+  private static final String TRANSFERING_WALLETS_BETWEEN_USERS_IS_PROHIBITED =
+      "Transfering wallets between users is prohibited";
   private static final String WALLET_DOESN_T_EXISTS = "Wallet doesn't exists";
   private static final String USER_DOESNT_EXISTS = "User doesn't exists";
   private static final String EXISTENT_WALLET_MESSAGE =
@@ -45,7 +45,7 @@ public class WalletService {
         .orElseThrow(() -> new NotFoundException(WALLET_DOESN_T_EXISTS));
 
     if (!wallet.getUserId().equals(foundWallet.getUserId())) {
-      throw new CantTransferWalletsException(TRANSFERING_WALLETS_BETWEEN_USERS_IS_PROIBITED);
+      throw new CantTransferWalletsException(TRANSFERING_WALLETS_BETWEEN_USERS_IS_PROHIBITED);
     }
 
     if (userService.findById(wallet.getUserId()).isEmpty()) {

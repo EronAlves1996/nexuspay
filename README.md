@@ -61,94 +61,51 @@ The system must support the following business capabilities:
     *   **Wallet Retrieval Endpoint:** Added `GET /wallets/{id}` returning wallet details (excluding balance for now). Uses `RetrieveWalletDto` as an inner record to encapsulate the response. The `@SoftDelete` annotation on `Wallet` ensures soft‑deleted wallets are automatically excluded from queries.
     *   **Testing:** Added unit tests for `WalletService` covering successful creation, duplicate name rejection, and non-existent user rejection. Added manual test script (`requests/wallet/create.sh` and `requests/wallet/getById.sh`).
     *   **Testing Conventions:** Standardized AAA (Arrange-Act-Assert) structure across all unit tests using blank line separation. Within each phase, related setup statements are grouped together; a blank line precedes the Act call and another separates the Assert phase. Complex tests may use explicit `// --- Arrange ---` comment blocks for clarity. Test method names use descriptive, sentence-like snake_case (e.g., `user_with_same_email_as_other_user_is_prohibited`) to tell the story of the scenario and expected outcome, prioritizing readability over rigid naming templates.
-    *   **Pending:**
-        *   Add `@Transactional(readOnly = true)` to `WalletService.findById` to optimise read operations and signal intent.
-        *   Implement Wallet retrieval by user (list wallets for a given user).
+    *   *Pending:* Add `@Transactional(readOnly = true)` to `WalletService.findById` to optimise read operations and signal intent. Implement Wallet retrieval by user (list wallets for a given user).
 *   **[Phase 3.1: Soft-Delete Index Optimization]** - Improved unique constraints to work correctly with soft-delete.
     *   **Problem:** The original `UNIQUE` constraints on `app_user(email)` and `wallet(name, user_id)` prevented creating new active records with the same value as a soft-deleted one. This made soft-delete less practical.
     *   **Solution:** Replaced the full-table unique constraints with **partial unique indexes** that only enforce uniqueness on active rows (`WHERE deleted = false`).  
-    *   **Database Migration:** Created `V3__fix_table_indexes_to_consider_deleted_data.sql`:
-        ```sql
-        ALTER TABLE app_user DROP CONSTRAINT app_user_email_key;
-        CREATE UNIQUE INDEX app_user_email_key ON app_user (email) WHERE deleted = false;
-
-        ALTER TABLE wallet DROP CONSTRAINT wallet_name_user_id_key;
-        CREATE UNIQUE INDEX wallet_name_user_id_key ON wallet (name, user_id) WHERE deleted = false;
-        ```
+    *   **Database Migration:** Created `V3__fix_table_indexes_to_consider_deleted_data.sql`.  
     *   **Result:** Duplicate emails or wallet names are now allowed among soft‑deleted records, while active records remain strictly unique. This aligns perfectly with Hibernate’s `@SoftDelete` behaviour.
-    *   **Impact:** No application code changes required – the partial indexes are transparent to JPA. Manual testing confirmed that `INSERT` operations respect the new rules.
     *   **Status:** Completed and merged.
-
 *   **[Phase 3.2: Wallet Update Endpoint]** - Implemented `PUT /wallets/{id}` to modify an existing wallet.
     *   **Features:** Updates wallet `name` and `minLimit` (maximum zero). The `userId` in the request body must match the current owner; transferring a wallet to another user is forbidden and returns `403 Forbidden`.
-    *   **Validation & Error Handling:**
-        *   `@Size(min=4, max=255)` and `@NotNull` on `name`.
-        *   `@NotNull` and `@Max(0)` on `minLimit`.
-        *   `NotFoundException` (`404`) if the wallet does not exist.
-        *   `UserDoesntExistsException` (`400`) if the user referenced in the DTO no longer exists.
-        *   `CantTransferWalletsException` (`403`) if the DTO’s `userId` differs from the existing wallet’s owner.
-        *   `WalletAlreadyExistsException` (`409`) if the new name already belongs to another active wallet of the same user.
-    *   **Data Integrity:** The update runs inside a transactional method and uses the existing `findByNameAndUserId` check, which respects soft‑deleted rows. The partial unique index on `(name, user_id) WHERE deleted = false` provides a final safeguard against duplicates.
-    *   **Testing:** Unit tests cover the happy path, wallet not found, user not found, duplicate name, and cross‑user transfer attempts.
+    *   **Validation & Error Handling:** Added proper exceptions and HTTP status codes.
+    *   **Testing:** Unit tests cover happy path, not found, user not found, duplicate name, and cross‑user transfer attempts.
     *   **Manual Testing:** Added `requests/wallet/update.sh` script.
-
 *   **[Phase 3.3: Service Layer CQS Refactoring]** - Refactored `UserService` and `WalletService` to follow Command-Query Separation (CQS) principles.
-    *   **Changes:**
-        *   `create()` and `update()` methods now return `void` instead of the persisted entity or `Optional`. This treats write operations as pure commands with side effects.
-        *   `update()` no longer returns an empty `Optional` when the entity does not exist – it now throws `NotFoundException` (annotated with `@ResponseStatus(HttpStatus.NOT_FOUND)`).
-        *   Controllers adjusted accordingly: the `Location` header is built using the original entity passed to the service (relying on Hibernate/JPA to modify the object’s `id` in place).
-        *   `PUT /users/{id}` now performs two separate calls: one command (`update`) and one query (`findById`). This preserves CQS at the cost of an extra database roundtrip – an acceptable trade‑off for clearer separation.
-    *   **Exception Handling:**
-        *   Existing exceptions (`UserAlreadyExistsException`, `NotFoundException`, `WalletAlreadyExistsException`, etc.) are annotated with `@ResponseStatus`, removing the need for a global `@ControllerAdvice` at this stage.
-        *   Stack traces omitted from error responses via `spring.web.error.include-stacktrace: never` in `application.yaml`.
-    *   **Testing:**
-        *   Unit tests updated to expect exceptions (e.g., `assertThrows(NotFoundException.class, ...)`) or to verify side effects.
-        *   No explicit `verify(repository).save(...)` needed for `update` because the entity is managed by the persistence context; changes are automatically flushed inside the `@Transactional` method.
-    *   **Impact:** Cleaner separation of commands and queries, more explicit error signalling, and reduced boilerplate in controllers. No functional changes to business behaviour.
+    *   **Changes:** Write methods return `void`, throw `NotFoundException` instead of returning empty `Optional`, controllers adjusted.
+    *   **Exception Handling:** Annotated exceptions with `@ResponseStatus`; stack traces omitted via configuration.
+    *   **Testing:** Unit tests updated to expect exceptions or verify side effects.
+    *   **Impact:** Cleaner separation of commands and queries, more explicit error signalling.
+*   **[Phase 4: Transaction Domain Model (Double-Entry Accounting)]** - **COMPLETED**  
+    Designed and implemented the core transaction engine based on a double-entry bookkeeping model.
+    *   **Concepts:** A transaction is a zero-sum, unidirectional resource transfer between two players. Every transfer incurs a debit (reduction) on the source and a credit (addition) on the target, modelled using double-entry accounting.
+    *   **Database Changes (Migration `V4__create_transaction_table.sql`):**
+        *   Created PostgreSQL enum `transaction_operation_type` (`'CREDIT'`, `'DEBIT'`).
+        *   Created `app_transaction` table with `BIGSERIAL` primary key, `wallet_id` (foreign key to `wallet`), `created_at` (timestamp with time zone), `operation`, `description`, and `amount` with `CHECK (amount > 0)`.
+        *   **Note:** The index on `wallet_id` is planned as a separate migration (tracked via GitHub issue) to keep the current change focused.
+    *   **Application Entities:**
+        *   `Transaction.java` – immutable entity (`@Immutable`) with `@Builder`, protected no-arg constructor, and proper mapping for the PostgreSQL enum (`columnDefinition = "transaction_operation_type"`).
+        *   `TransactionOperation.java` – simple enum.
+    *   **Pending Implementation (next phases):**
+        *   `TransactionService` with `transfer(sourceWalletId, targetWalletId, amount, description)` method, including pessimistic locking for the source wallet, balance validation, and insertion of both DEBIT and CREDIT rows.
+        *   Materialized balance column (`balance`, `last_processed_transaction_id`) on `Wallet` table (separate migration `V5`).
+        *   Nightly compensation and balance materialisation jobs.
+        *   Unit and integration tests covering concurrent transfers, insufficient funds, etc.
+    *   **Technical Debt / Future Issues:**
+        *   Missing `transfer_id` column to group paired DEBIT/CREDIT rows – left for later phase (GitHub issue created).
+        *   Index on `app_transaction(wallet_id)` will be added in a follow‑up migration for performance.
+    *   **Design Documentation:** The detailed design is captured in `docs/transaction-domain-model.md`.
+    *   **Status:** Core entity and schema are merged. Service layer implementation is the next deliverable.
 
-*   **[Phase 4: Transaction Domain Model (Double-Entry Accounting)]** - Designed the core transaction engine based on a double-entry bookkeeping model.
-    *   **Concepts:** A transaction is a zero-sum, unidirectional resource transfer between two players. Every transfer incurs a debit (reduction) on the source and a credit (addition) on the target. This is modelled using double-entry accounting, ensuring the total amount of money in the system remains invariant.
-    *   **Database Changes (Pending Implementation):**
-        *   **Wallet table additions:** Two new columns – `balance DECIMAL(10,2)` (materialized current balance) and `last_processed_transaction_id BIGINT` (marks the last transaction included in the materialized balance). The wallet also retains a `minimum_balance` constraint (can be negative for credit lines).
-        *   **Transaction table (`V3__create_transaction_table.sql`):** Immutable audit log with columns:
-            *   `id BIGSERIAL PRIMARY KEY`
-            *   `wallet_id UUID` (the wallet affected by this entry – either source or target)
-            *   `operation_timestamp TIMESTAMP`
-            *   `operation ENUM('DEBIT', 'CREDIT')`
-            *   `description VARCHAR(255)`
-            *   `amount DECIMAL(10,2)`
-        *   **Important:** Each logical transfer (e.g., P2P payment) produces **two** rows in the transaction table: one DEBIT for the source wallet and one CREDIT for the target wallet, inserted inside the same database transaction to preserve the zero-sum invariant.
-    *   **Application Logic:**
-        *   **Balance computation:** `current_balance = wallet.balance - sum(debits since last_processed_id) + sum(credits since last_processed_id)`.
-        *   **Transaction execution (source side):**
-            1. Lock the source wallet row using `SELECT ... FOR UPDATE`.
-            2. Fetch all transactions with `id > wallet.last_processed_transaction_id` (no lock needed for reads).
-            3. Calculate the true current balance.
-            4. Verify that `current_balance - transfer_amount >= wallet.minimum_balance`. If not, abort.
-            5. Insert the DEBIT row for the source and the CREDIT row for the target inside the same `@Transactional` method.
-            6. *The target wallet is not locked* – its balance will be eventually consistent; credit operations never fail due to upper limits (no upper limits exist in this model).
-        *   **Nightly compensations (external pseudo-accounts):**
-            *   External players (e.g., National Treasure, Nexus Pay custody accounts) are represented as wallets owned by a special "system" user.
-            *   Every night, the system fetches all such external wallets.
-            *   For each wallet:
-                *   If balance > 0 → debit the external wallet, credit the custody wallet (root user).
-                *   If balance < 0 → credit the external wallet, debit the custody wallet.
-            *   This ensures the custody wallet absorbs all residual imbalances, maintaining the zero-sum property across the entire system.
-        *   **Nightly materialized balance update:**
-            *   Runs after compensations.
-            *   Iterates over all wallets, outside of any long-running transaction.
-            *   For each wallet, starts a new transaction with `REPEATABLE READ` isolation, locks the wallet row (`SELECT FOR UPDATE`), aggregates all unprocessed transactions (where `id > last_processed_transaction_id`), updates `balance` and sets `last_processed_transaction_id` to the maximum `id` of the processed transactions.
-            *   If a live transaction is concurrently holding the lock, the nightly update waits (lock acquisition order prevents deadlocks).
-    *   **Pending Implementation Details:**
-        *   Flyway migration scripts for `V4__create_transaction_table.sql` and the `ALTER TABLE wallet ADD COLUMN ...` statements.
-        *   `Transaction` entity (JPA) and `TransactionRepository`.
-        *   `TransactionService` with methods: `transfer(sourceWalletId, targetWalletId, amount, description)`.
-        *   Unit and integration tests covering:
-            *   Happy path (successful transfer).
-            *   Insufficient funds (balance below minimum).
-            *   Concurrent transfers from the same wallet (pessimistic locking prevents race conditions).
-            *   Nightly compensation and balance materialization logic (scheduled jobs using `@Scheduled` or a cron‑based trigger).
-        *   Global exception handler for transaction-specific exceptions (`InsufficientFundsException`, `WalletNotFoundException`).
-        *   Manual test script `requests/transaction/transfer.sh`.
-    *   **Design Documentation:** The detailed design is captured in `docs/transaction-domain-model.md`, which served as the blueprint for this phase.
-    *   *Note on future evolution:* This monolith design intentionally uses row‑level locking for simplicity. When the project evolves to microservices, the transaction engine will be refactored into an event‑driven saga with Kafka and the outbox pattern, and idempotency keys will be introduced. Those changes are out of scope for the current phase.
+## 🔜 Upcoming Phases (Preview)
+*   **Phase 5:** Transaction Service & Balance Management – materialized balance, `SELECT FOR UPDATE`, and the `transfer` API.
+*   **Phase 6:** Scheduled Jobs – nightly compensation and balance materialisation.
+*   **Phase 7:** Transaction History & Search (CQRS with Elasticsearch).
+*   **Phase 8:** Fraud Detection integration (LLM).
+*   **Phase 9:** Migration to event‑driven microservices (Kafka, Outbox, Saga).
+
+---
+
+*Last updated after Phase 4 completion.*

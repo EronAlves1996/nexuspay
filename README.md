@@ -92,6 +92,20 @@ The system must support the following business capabilities:
     *   **Testing:** Unit tests cover the happy path, wallet not found, user not found, duplicate name, and cross‑user transfer attempts.
     *   **Manual Testing:** Added `requests/wallet/update.sh` script.
 
+*   **[Phase 3.3: Service Layer CQS Refactoring]** - Refactored `UserService` and `WalletService` to follow Command-Query Separation (CQS) principles.
+    *   **Changes:**
+        *   `create()` and `update()` methods now return `void` instead of the persisted entity or `Optional`. This treats write operations as pure commands with side effects.
+        *   `update()` no longer returns an empty `Optional` when the entity does not exist – it now throws `NotFoundException` (annotated with `@ResponseStatus(HttpStatus.NOT_FOUND)`).
+        *   Controllers adjusted accordingly: the `Location` header is built using the original entity passed to the service (relying on Hibernate/JPA to modify the object’s `id` in place).
+        *   `PUT /users/{id}` now performs two separate calls: one command (`update`) and one query (`findById`). This preserves CQS at the cost of an extra database roundtrip – an acceptable trade‑off for clearer separation.
+    *   **Exception Handling:**
+        *   Existing exceptions (`UserAlreadyExistsException`, `NotFoundException`, `WalletAlreadyExistsException`, etc.) are annotated with `@ResponseStatus`, removing the need for a global `@ControllerAdvice` at this stage.
+        *   Stack traces omitted from error responses via `spring.web.error.include-stacktrace: never` in `application.yaml`.
+    *   **Testing:**
+        *   Unit tests updated to expect exceptions (e.g., `assertThrows(NotFoundException.class, ...)`) or to verify side effects.
+        *   No explicit `verify(repository).save(...)` needed for `update` because the entity is managed by the persistence context; changes are automatically flushed inside the `@Transactional` method.
+    *   **Impact:** Cleaner separation of commands and queries, more explicit error signalling, and reduced boilerplate in controllers. No functional changes to business behaviour.
+
 *   **[Phase 4: Transaction Domain Model (Double-Entry Accounting)]** - Designed the core transaction engine based on a double-entry bookkeeping model.
     *   **Concepts:** A transaction is a zero-sum, unidirectional resource transfer between two players. Every transfer incurs a debit (reduction) on the source and a credit (addition) on the target. This is modelled using double-entry accounting, ensuring the total amount of money in the system remains invariant.
     *   **Database Changes (Pending Implementation):**

@@ -20,14 +20,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Table(name = "app_transaction")
 @Immutable
 @Getter
-@Setter
+@Builder
 public class Transaction {
 
   @Id
@@ -46,7 +46,7 @@ public class Transaction {
   private Instant createdAt;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "transaction_operation_type")
   private TransactionOperation operation;
 
   @Column(nullable = false, length = 255)

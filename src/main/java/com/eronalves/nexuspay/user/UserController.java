@@ -47,8 +47,9 @@ class UserController extends BaseController {
 
   @PostMapping
   public ResponseEntity<Void> create(@Valid @RequestBody UpsertUserDto dto) {
-    User createdUser = service.create(User.from(dto));
-    return createdSensible(createdUser);
+    User user = User.from(dto);
+    service.create(user);
+    return createdSensible(user);
   }
 
   @GetMapping
@@ -76,7 +77,8 @@ class UserController extends BaseController {
       @Valid @PathVariable("id") UUID id) {
     User userToUpdate = User.from(dto);
     userToUpdate.setId(id);
-    return service.update(userToUpdate).map(RetrieveUserDto::from).map(ResponseEntity::ok)
+    service.update(userToUpdate);
+    return service.findById(id).map(RetrieveUserDto::from).map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
   }
 

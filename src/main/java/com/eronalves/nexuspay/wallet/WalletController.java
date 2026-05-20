@@ -45,8 +45,8 @@ class WalletController extends BaseController {
   @PostMapping
   public ResponseEntity<Void> create(@Valid @RequestBody CreateWalletDto dto) {
     Wallet wallet = Wallet.from(dto);
-    Wallet created = service.create(wallet);
-    return createdSensible(created);
+    service.create(wallet);
+    return createdSensible(wallet);
   }
 
   @GetMapping("/{id}")

@@ -23,7 +23,7 @@ public class WalletService {
   private final UserService userService;
 
   @Transactional(readOnly = false)
-  public Wallet create(Wallet wallet) {
+  public void create(Wallet wallet) {
     if (userService.findById(wallet.getUserId()).isEmpty()) {
       throw new UserDoesntExistsException(USER_DOESNT_EXISTS);
     }
@@ -32,7 +32,7 @@ public class WalletService {
       throw new WalletAlreadyExistsException(EXISTENT_WALLET_MESSAGE);
     }
 
-    return repository.save(wallet);
+    repository.save(wallet);
   }
 
   public Optional<Wallet> findById(UUID id) {

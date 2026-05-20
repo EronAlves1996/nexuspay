@@ -40,10 +40,11 @@ public class WalletServiceTest {
       wallet.setId(UUID.randomUUID());
       return wallet;
     });
+    Wallet wallet = Wallet.from(new CreateWalletDto(WALLET_TEST, userId));
 
-    var createdWallet = sut.create(Wallet.from(new CreateWalletDto(WALLET_TEST, userId)));
+    sut.create(wallet);
 
-    Assertions.assertThat(createdWallet.getId()).isNotNull();
+    Assertions.assertThat(wallet.getId()).isNotNull();
   }
 
   @Test

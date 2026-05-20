@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.eronalves.nexuspay.infra.NotFoundException;
 import com.eronalves.nexuspay.user.UserController.UpsertUserDto;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,16 +60,15 @@ public class UserServiceTest {
 
   @Test
   public void updating_user_with_unchanged_email_succeeds() {
-    User user = arrangeFindById();
+    arrangeFindById();
     User userToUpdate = new User();
     userToUpdate.setId(UUID.randomUUID());
     userToUpdate.setName(TEST_NAME);
     userToUpdate.setEmail(TEST_EMAIL);
 
-    Optional<User> updatedUser = sut.update(userToUpdate);
+    sut.update(userToUpdate);
 
-    Assertions.assertThat(updatedUser).isNotEmpty();
-    Assertions.assertThat(user.getName()).isEqualTo(TEST_NAME);
+    Mockito.verify(repository).findById(Mockito.any());
   }
 
 
@@ -78,9 +78,7 @@ public class UserServiceTest {
     User user = new User();
     user.setId(UUID.randomUUID());
 
-    Optional<User> emptyUser = sut.update(user);
-
-    Assertions.assertThat(emptyUser).isEmpty();
+    assertThrows(NotFoundException.class, () -> sut.update(user));
   }
 
   @Test

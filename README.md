@@ -90,7 +90,7 @@ The system must support the following business capabilities:
         *   `TransactionOperation.java` – simple enum.
     *   **Pending Implementation (next phases):**
         *   `TransactionService` with `transfer(sourceWalletId, targetWalletId, amount, description)` method, including pessimistic locking for the source wallet, balance validation, and insertion of both DEBIT and CREDIT rows.
-        *   Materialized balance column (`balance`, `last_processed_transaction_id`) on `Wallet` table (separate migration `V5`).
+        *   Materialized balance column (`balance`, `last_processed_transaction_id`) on `Wallet` table (separate migration).
         *   Nightly compensation and balance materialisation jobs.
         *   Unit and integration tests covering concurrent transfers, insufficient funds, etc.
     *   **Technical Debt / Future Issues:**
@@ -98,14 +98,25 @@ The system must support the following business capabilities:
         *   Index on `app_transaction(wallet_id)` will be added in a follow‑up migration for performance.
     *   **Design Documentation:** The detailed design is captured in `docs/transaction-domain-model.md`.
     *   **Status:** Core entity and schema are merged. Service layer implementation is the next deliverable.
+*   **[Phase 5: Account Classification (Chart of Accounts)]** - **COMPLETED**  
+    Added reference data to support double‑entry accounting: a chart of accounts that classifies the nature of each balance (ACTIVE vs PASSIVE). This is a foundational building block for the transaction engine, enabling proper accounting rules and financial statement generation.
+    *   **Features:** Lookup entity `AccountClassification` with `description` and `balanceSide`. Initial seed data: Demand Deposits (ACTIVE), Pending Transfers (ACTIVE), User Deposits (PASSIVE).
+    *   **Database Migration (`V5__create_account_classification_table.sql`):**
+        *   Created PostgreSQL enum `balance_side_enum` (`'ACTIVE'`, `'PASSIVE'`).
+        *   Created `account_classification` table (`bigserial` PK, `balance_side`, `description`).
+        *   Seeded initial classification rows.
+    *   **Application Entity:** `AccountClassification.java` – immutable reference entity (`@Immutable`), Jakarta validation (`@NotNull`, `@Size(max=255)`), builder pattern.
+    *   **Design Notes:** This entity does **not** extend `SensitiveEntity` because it is static reference data that never changes and does not require audit timestamps.
+    *   **Testing:** Not unit‑tested (pure entity + migration); passes `mvn verify` and will be covered by future integration tests.
+    *   **Status:** Merged. The system now has a minimal chart of accounts to support the upcoming transaction service.
 
 ## 🔜 Upcoming Phases (Preview)
-*   **Phase 5:** Transaction Service & Balance Management – materialized balance, `SELECT FOR UPDATE`, and the `transfer` API.
-*   **Phase 6:** Scheduled Jobs – nightly compensation and balance materialisation.
-*   **Phase 7:** Transaction History & Search (CQRS with Elasticsearch).
-*   **Phase 8:** Fraud Detection integration (LLM).
-*   **Phase 9:** Migration to event‑driven microservices (Kafka, Outbox, Saga).
+*   **Phase 6:** Transaction Service & Balance Management – materialized balance, `SELECT FOR UPDATE`, and the `transfer` API.
+*   **Phase 7:** Scheduled Jobs – nightly compensation and balance materialisation.
+*   **Phase 8:** Transaction History & Search (CQRS with Elasticsearch).
+*   **Phase 9:** Fraud Detection integration (LLM).
+*   **Phase 10:** Migration to event‑driven microservices (Kafka, Outbox, Saga).
 
 ---
 
-*Last updated after Phase 4 completion.*
+*Last updated after Phase 5 completion.*

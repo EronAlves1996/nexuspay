@@ -69,8 +69,9 @@ The system must support the following business capabilities:
     *   **Result:** Duplicate emails or wallet names are now allowed among soft‑deleted records, while active records remain strictly unique. This aligns perfectly with Hibernate’s `@SoftDelete` behaviour.
     *   **Status:** Completed and merged.
 *   **[Phase 3.2: Wallet Update Endpoint]** - Implemented `PUT /wallets/{id}` to modify an existing wallet.
-    *   **Features:** Updates wallet `name` and `minLimit` (maximum zero). The `userId` in the request body must match the current owner; transferring a wallet to another user is forbidden and returns `403 Forbidden`.
+    *   **Features:** Updates wallet `name` and `minLimit` (must be ≤ 0, enforced by `@NegativeOrZero`). The `userId` in the request body must match the current owner; transferring a wallet to another user is forbidden and returns `403 Forbidden`.
     *   **Validation & Error Handling:** Added proper exceptions and HTTP status codes.
+    *   **Entity Validation:** Added Jakarta Bean Validation constraints directly to the `Wallet` entity: `@NotNull` and `@NegativeOrZero` on `minLimit`, `@NotNull` and `@Size(max=255)` on `name`, and `@NotNull` on `userId`. These constraints are automatically enforced by Hibernate during persistence lifecycle events (e.g., `PreUpdate`), ensuring data integrity before any database operation.
     *   **Testing:** Unit tests cover happy path, not found, user not found, duplicate name, and cross‑user transfer attempts.
     *   **Manual Testing:** Added `requests/wallet/update.sh` script.
 *   **[Phase 3.3: Service Layer CQS Refactoring]** - Refactored `UserService` and `WalletService` to follow Command-Query Separation (CQS) principles.
@@ -119,4 +120,4 @@ The system must support the following business capabilities:
 
 ---
 
-*Last updated after Phase 5 completion.*
+*Last updated after Phase 3.2 validation improvements.*

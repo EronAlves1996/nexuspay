@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +30,8 @@ public class AccountClassification {
   private BigInteger id;
 
   @NotNull
-  @Column(nullable = false)
+  @Column(nullable = false, length = 255)
+  @Size(max = 255)
   private String description;
 
   @Enumerated(EnumType.STRING)

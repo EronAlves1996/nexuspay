@@ -1,4 +1,4 @@
-CREATE TYPE balance_side_enum enum ('PASSIVE', 'ACTIVE');
+CREATE TYPE balance_side_enum AS enum ('PASSIVE', 'ACTIVE');
 create table account_classification (
   id bigserial primary key,
   balance_side balance_side_enum not null,

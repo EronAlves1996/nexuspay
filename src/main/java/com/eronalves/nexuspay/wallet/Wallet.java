@@ -14,6 +14,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NegativeOrZero;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,9 +43,13 @@ public class Wallet extends SensitiveEntity {
   }
 
   @Column(nullable = false, length = 255)
+  @NotNull
+  @Size(max = 255)
   private String name;
 
   @Column(nullable = false)
+  @NegativeOrZero
+  @NotNull
   private BigDecimal minLimit;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -51,6 +58,7 @@ public class Wallet extends SensitiveEntity {
   private User user;
 
   @Column(name = "user_id", nullable = false)
+  @NotNull
   private UUID userId;
 
   public void update(Wallet wallet) {
